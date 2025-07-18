@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         /* Estilos personalizados para el carrusel y asegurar el comportamiento deseado */
-        body {
+        html, body { /* Aplicar estilos a html y body para asegurar transparencia total */
             font-family: 'Inter', sans-serif; /* Fuente Inter como fallback */
             margin: 0;
             padding: 0;
@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh; /* Asegura que el cuerpo ocupe al menos la altura de la ventana */
-            background-color: #f3f4f6; /* Un fondo claro para el canvas */
+            background-color: transparent; /* Fondo transparente para eliminar el "halo" blanco */
             overflow: hidden; /* Evita barras de desplazamiento no deseadas en el body */
         }
 
