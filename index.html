@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Últimas Publicaciones de Dev.to</title>
+    <!-- Tailwind CSS CDN para estilos rápidos y responsivos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Roboto Mono para estilo de programación -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para el carrusel y asegurar el comportamiento deseado */
+        body {
+            font-family: 'Inter', sans-serif; /* Fuente Inter como fallback */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Asegura que el cuerpo ocupe al menos la altura de la ventana */
+            background-color: #f3f4f6; /* Un fondo claro para el canvas */
+            overflow: hidden; /* Evita barras de desplazamiento no deseadas en el body */
+        }
+
+        #devto-posts-widget {
+            /* Contenedor principal del widget: una barra horizontal */
+            width: 100%;
+            max-width: 800px; /* Ancho máximo para la barra, ajusta según necesidad */
+            height: 50px; /* Altura fija para toda la barra, similar a la imagen */
+            display: flex; /* Habilita Flexbox para el diseño horizontal */
+            align-items: center; /* Centra verticalmente los elementos hijos */
+            justify-content: flex-start; /* Alinea los elementos al inicio */
+            border-radius: 12px; /* Esquinas redondeadas para toda la barra */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Sombra para profundidad */
+            overflow: hidden; /* Asegura que el contenido y los bordes redondeados se recorten correctamente */
+            border: 2px solid #00FF09; /* Borde verde neón para toda la barra */
+        }
+
+        /* Sección de cabecera izquierda (roja con corte diagonal) */
+        .header-left {
+            flex-shrink: 0; /* Evita que se encoja */
+            background-color: #C00000; /* Rojo vibrante como en la imagen */
+            color: white;
+            height: 100%; /* Ocupa toda la altura del padre */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px; /* Padding horizontal */
+            font-size: 1.25rem; /* Tamaño de fuente para el título */
+            font-weight: bold;
+            white-space: nowrap; /* Evita que el texto se envuelva */
+            /* Bordes redondeados solo en el lado izquierdo para que coincida con el padre */
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            position: relative; /* Necesario para el pseudo-elemento */
+            z-index: 2; /* Asegura que esté por encima del carrusel si hay solapamiento */
+
+            /* --- Corte Diagonal --- */
+            /* Usamos un pseudo-elemento para crear la forma diagonal */
+            /* Esto es más robusto que clip-path directo en el flex item para la división */
+        }
+
+        .header-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -20px; /* Ajusta este valor para controlar la inclinación */
+            bottom: 0;
+            width: 40px; /* Ancho del "corte" */
+            background-color: #C00000; /* Mismo color que el fondo del header */
+            transform: skewX(-20deg); /* Ángulo de la diagonal */
+            transform-origin: top left;
+            z-index: -1; /* Detrás del texto pero delante del carrusel */
+        }
+
+
+        /* Sección del carrusel a la derecha (púrpura) */
+        .carousel-right {
+            flex-grow: 1; /* Ocupa todo el espacio restante */
+            background-color: #281042; /* Fondo púrpura */
+            height: 100%; /* Ocupa toda la altura del padre */
+            display: flex;
+            align-items: center;
+            overflow: hidden; /* Crucial para recortar el contenido que se desplaza */
+            position: relative;
+            /* Ajuste para solapar visualmente el corte diagonal */
+            margin-left: -15px; /* Ajusta este valor para que coincida con el corte del header */
+            padding-left: 15px; /* Compensa el margen negativo para que el contenido no se corte */
+        }
+
+        .carousel-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Asegura que el track se recorte dentro del contenedor */
+        }
+
+        .carousel-track {
+            display: flex;
+            flex-direction: row; /* Desplazamiento horizontal */
+            white-space: nowrap; /* Evita que los elementos se envuelvan */
+            height: 100%; /* Ocupa toda la altura del contenedor */
+            align-items: center; /* Centra verticalmente los elementos en el track */
+            /* No hay transición aquí para un desplazamiento continuo (ticker) */
+        }
+
+        .post-item {
+            flex-shrink: 0; /* Evita que los elementos se encojan */
+            height: 100%; /* Ocupa toda la altura del track */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Alinea el contenido al inicio */
+            padding: 0 16px; /* Padding horizontal dentro de cada elemento */
+            min-width: 280px; /* Ancho mínimo para cada elemento, ajusta según el contenido promedio */
+        }
+
+        .post-item a {
+            text-decoration: none;
+            color: #ffffff; /* Texto del enlace en blanco para contraste */
+            display: flex;
+            align-items: center; /* Centra verticalmente el contenido dentro del enlace */
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .post-title {
+            font-family: 'Roboto Mono', monospace; /* Fuente Roboto Mono */
+            font-weight: 700; /* Negrita */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap; /* Asegura que el título no se envuelva */
+        }
+
+        .post-date {
+            font-size: 0.8rem;
+            color: #a0a0a0; /* Gris claro para la fecha */
+            white-space: nowrap; /* Asegura que la fecha no se envuelva */
+        }
+
+        /* Estilos para el separador '|' */
+        .separator {
+            color: #00FF09; /* Verde neón para el separador */
+            margin: 0 8px; /* Espaciado alrededor del separador */
+        }
+
+        /* Estilos para el estado de carga/sin publicaciones */
+        .loading-message, .no-posts-message {
+            padding: 0 16px; /* Ajusta el padding para el layout horizontal */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0a0;
+            font-style: italic;
+            flex-shrink: 0; /* Evita que se encoja */
+            width: 100%; /* Ocupa todo el ancho cuando no hay publicaciones */
+        }
+    </style>
+</head>
+<body>
+    <div id="devto-posts-widget">
+        <!-- Sección de cabecera izquierda -->
+        <div class="header-left">
+            <span>⬛️🟪/Post</span>
+        </div>
+        <!-- Sección de carrusel derecha -->
+        <div class="carousel-right" id="carousel-right-section">
+            <div class="carousel-container">
+                <div class="carousel-track" id="carousel-track">
+                    <div class="loading-message">Cargando publicaciones...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const track = document.getElementById('carousel-track');
+            const carouselRightSection = document.getElementById('carousel-right-section'); // Nueva referencia
+            const username = 'zzhdlr5'; // Tu nombre de usuario de Dev.to
+            const devToApiUrl = `https://dev.to/api/articles?username=${username}`;
+
+            let posts = [];
+            let intervalId;
+            let currentScroll = 0; // Para el desplazamiento continuo
+            let animationSpeed = 0.5; // Velocidad de desplazamiento en píxeles por intervalo
+
+            /**
+             * Fetches articles from the Dev.to API for the specified username.
+             * @returns {Array} An array of post objects or an empty array if an error occurs.
+             */
+            async function fetchDevToPosts() {
+                try {
+                    const response = await fetch(devToApiUrl);
+                    if (!response.ok) {
+                        console.error(`Error HTTP! Estado: ${response.status} - ${response.statusText}`);
+                        return [];
+                    }
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error("Error al obtener publicaciones de Dev.to:", error);
+                    return [];
+                }
+            }
+
+            /**
+             * Filters an array of posts to include only those published within the last 7 days.
+             * @param {Array} allPosts - The array of post objects from Dev.to API.
+             * @returns {Array} An array of filtered post objects.
+             */
+            function getPostsFromLast7Days(allPosts) {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                sevenDaysAgo.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+
+                return allPosts.filter(post => {
+                    const postDate = new Date(post.published_at);
+                    postDate.setHours(0, 0, 0, 0); // Normalizar fecha de publicación
+                    return postDate >= sevenDaysAgo;
+                });
+            }
+
+            /**
+             * Calculates and returns a concise string indicating how many days ago a post was published.
+             * @param {string} publishedDate - The ISO 8601 date string from the post.
+             * @returns {string} A concise string like "hoy", "ayer", or "5d".
+             */
+            function getDaysAgo(publishedDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const postDate = new Date(publishedDate);
+                postDate.setHours(0, 0, 0, 0);
+
+                const diffTime = Math.abs(today.getTime() - postDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) {
+                    return "hoy";
+                } else if (diffDays === 1) {
+                    const yesterday = new Date(today);
+                    yesterday.setDate(today.getDate() - 1);
+                    if (postDate.toDateString() === yesterday.toDateString()) {
+                        return "ayer";
+                    }
+                    return "1d"; // Fallback if 1 day difference but not literally yesterday
+                } else {
+                    return `${diffDays}d`; // e.g., "5d" for 5 days ago
+                }
+            }
+
+            /**
+             * Renders the posts into the carousel track for horizontal scrolling.
+             */
+            function renderPosts() {
+                track.innerHTML = ''; // Limpiar contenido anterior
+                if (posts.length === 0) {
+                    track.innerHTML = '<div class="no-posts-message">No hay publicaciones recientes en los últimos 7 días.</div>';
+                    return;
+                }
+
+                // Duplicar posts varias veces para un efecto de desplazamiento continuo (ticker)
+                // Esto permite que el contenido se desplace sin interrupciones visibles al reiniciar.
+                // Se duplican suficientes veces para que el bucle sea fluido.
+                const postsToDisplay = posts.length > 0 ? [...posts, ...posts, ...posts, ...posts, ...posts, ...posts] : [];
+
+                postsToDisplay.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post-item');
+                    postElement.innerHTML = `
+                        <a href="${post.url}" target="_blank" rel="noopener noreferrer">
+                            <span class="post-title">${post.title}</span>
+                            <span class="separator">|</span>
+                            <span class="post-date">${getDaysAgo(post.published_at)}</span>
+                        </a>
+                    `;
+                    track.appendChild(postElement);
+                });
+
+                startCarousel();
+            }
+
+            /**
+             * Starts the automatic horizontal carousel scrolling.
+             */
+            function startCarousel() {
+                if (posts.length <= 0) { // No scrolling if no posts
+                    clearInterval(intervalId);
+                    return;
+                }
+
+                clearInterval(intervalId); // Limpiar cualquier intervalo existente
+
+                // Si solo hay una publicación, no se necesita desplazamiento continuo, centrarla
+                if (posts.length === 1) {
+                    track.style.justifyContent = 'center';
+                    return;
+                }
+
+                // Calcular el ancho total de una "vuelta" completa de los posts originales
+                const firstItem = track.querySelector('.post-item');
+                if (!firstItem) return;
+
+                // Sumar los anchos de los posts originales para obtener el punto de reinicio
+                let totalScrollWidth = 0;
+                for (let i = 0; i < posts.length; i++) {
+                    // Asegurarse de que el elemento exista antes de obtener su offsetWidth
+                    if (track.children[i]) {
+                        totalScrollWidth += track.children[i].offsetWidth;
+                    }
+                }
+
+                // Iniciar el desplazamiento
+                intervalId = setInterval(() => {
+                    currentScroll += animationSpeed;
+                    if (currentScroll >= totalScrollWidth) {
+                        currentScroll = 0; // Reiniciar para un bucle continuo
+                    }
+                    track.style.transform = `translateX(-${currentScroll}px)`;
+                }, 20); // Intervalo de tiempo para la animación (20ms = 50fps)
+            }
+
+            /**
+             * Pauses the carousel animation.
+             */
+            function pauseCarousel() {
+                clearInterval(intervalId);
+            }
+
+            /**
+             * Resumes the carousel animation.
+             */
+            function resumeCarousel() {
+                startCarousel(); // Llama a startCarousel para reanudar el intervalo
+            }
+
+            // Añadir event listeners para pausar/reanudar al pasar el cursor
+            carouselRightSection.addEventListener('mouseover', pauseCarousel);
+            carouselRightSection.addEventListener('mouseout', resumeCarousel);
+
+
+            // Cargar publicaciones al iniciar
+            const allFetchedPosts = await fetchDevToPosts();
+            posts = getPostsFromLast7Days(allFetchedPosts);
+            renderPosts();
+        });
+    </script>
+</body>
+</html>
