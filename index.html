@@ -9,8 +9,8 @@
     <!-- Google Fonts: Roboto Mono para estilo de programación -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos personalizados para el carrusel y asegurar el comportamiento deseado */
-        html, body { /* Aplicar estilos a html y body para asegurar transparencia total */
+        /* Estilos generales para el body, asegurando transparencia */
+        html, body {
             font-family: 'Inter', sans-serif; /* Fuente Inter como fallback */
             margin: 0;
             padding: 0;
@@ -54,10 +54,6 @@
             border-bottom-left-radius: 10px;
             position: relative; /* Necesario para el pseudo-elemento */
             z-index: 2; /* Asegura que esté por encima del carrusel si hay solapamiento */
-
-            /* --- Corte Diagonal --- */
-            /* Usamos un pseudo-elemento para crear la forma diagonal */
-            /* Esto es más robusto que clip-path directo en el flex item para la división */
         }
 
         .header-left::after {
@@ -72,7 +68,6 @@
             transform-origin: top left;
             z-index: -1; /* Detrás del texto pero delante del carrusel */
         }
-
 
         /* Sección del carrusel a la derecha (púrpura) */
         .carousel-right {
@@ -91,7 +86,7 @@
         .carousel-container {
             width: 100%;
             height: 100%;
-            overflow: hidden; /* Asegura que el track se recorte dentro del contenedor */
+            overflow: hidden;
         }
 
         .carousel-track {
@@ -151,7 +146,7 @@
             justify-content: center;
             color: #a0a0a0;
             font-style: italic;
-            flex-shrink: 0; /* Evita que se encoja */
+            flex-shrink: 0;
             width: 100%; /* Ocupa todo el ancho cuando no hay publicaciones */
         }
     </style>
@@ -175,13 +170,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const track = document.getElementById('carousel-track');
-            const carouselRightSection = document.getElementById('carousel-right-section'); // Nueva referencia
+            const carouselRightSection = document.getElementById('carousel-right-section');
             const username = 'zzhdlr5'; // Tu nombre de usuario de Dev.to
             const devToApiUrl = `https://dev.to/api/articles?username=${username}`;
 
             let posts = [];
             let intervalId;
-            let currentScroll = 0; // Para el desplazamiento continuo
+            let currentScroll = 0;
             let animationSpeed = 0.5; // Velocidad de desplazamiento en píxeles por intervalo
 
             /**
